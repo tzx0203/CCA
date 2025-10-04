@@ -3,31 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <title>Patient Allocation Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- mobile scaling -->
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    
     .input-section {
       display: flex;
-      align-items: stretch;   /* both sides same height */
-      gap: 40px;
+      align-items: stretch;
+      gap: 30px;
+      flex-wrap: wrap; /* allows stacking on small screens */
     }
     .inputs {
       display: flex;
       flex-direction: column;
+      flex: 1;
+      min-width: 200px;
     }
-    .inputs label { margin-bottom: 8px; }
-    input { padding: 5px; width: 100px; margin-left: 5px; }
-    button { margin: 10px 5px 0 0; padding: 8px 15px; }
-    table { border-collapse: collapse; margin-top: 25px; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background: #f0f0f0; }
-    /* Right side: FINAL centered vertically */
+    .inputs label { margin-bottom: 10px; font-size: 16px; }
+    input { padding: 8px; width: 100px; margin-left: 5px; font-size: 16px; }
+    button { margin: 10px 5px 0 0; padding: 10px 15px; font-size: 16px; }
+    
     .final-box {
       display: flex;
-      align-items: center;    /* vertical center */
-      justify-content: center; /* horizontal center inside its box */
-      flex: 1;                /* take equal vertical height */
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      min-width: 200px;
+      margin-top: 10px;
     }
-    #final { font-weight: bold; font-size: 32px; white-space: nowrap; }
+    #final { font-weight: bold; font-size: 22px; text-align: center; }
+
+    table { border-collapse: collapse; margin-top: 25px; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 14px; }
+    th { background: #f0f0f0; }
+
+    /* Make table scrollable on small screens */
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      .input-section {
+        flex-direction: column; /* stack vertically */
+        align-items: center;
+      }
+      .inputs, .final-box {
+        width: 100%;
+        text-align: center;
+      }
+      input { width: 120px; }
+      #final { font-size: 20px; margin-top: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -48,16 +76,18 @@
       </div>
     </div>
 
-    <!-- Right: FINAL aligned vertically center -->
+    <!-- Right: FINAL aligned -->
     <div class="final-box">
       <div id="final">FINAL: —</div>
     </div>
   </div>
 
-  <table id="resultTable">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-container">
+    <table id="resultTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <script>
     function allocatePatients() {
