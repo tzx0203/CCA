@@ -3,6 +3,8 @@ Patient Allocation Calculator
 A simple web-based calculator for distributing patients evenly across staff members in different hospital departments.
 Built with HTML, CSS, and JavaScript — no installation required. Runs on any device (desktop, tablet, or mobile).
 
+https://tzx0203.github.io/CCA/
+
 Features
 
 Dynamic Patient Distribution
