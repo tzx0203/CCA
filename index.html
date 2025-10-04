@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Patient Allocation Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     
@@ -11,7 +11,7 @@
       display: flex;
       align-items: stretch;
       gap: 30px;
-      flex-wrap: wrap; /* allows stacking on small screens */
+      flex-wrap: wrap;
     }
     .inputs {
       display: flex;
@@ -32,21 +32,20 @@
       margin-top: 10px;
     }
     #final { font-weight: bold; font-size: 22px; text-align: center; }
+    #totalPatientsDisplay { margin-top: 10px; font-weight: bold; }
 
     table { border-collapse: collapse; margin-top: 25px; width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 14px; }
     th { background: #f0f0f0; }
 
-    /* Make table scrollable on small screens */
     .table-container {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Mobile adjustments */
     @media (max-width: 600px) {
       .input-section {
-        flex-direction: column; /* stack vertically */
+        flex-direction: column;
         align-items: center;
       }
       .inputs, .final-box {
@@ -63,20 +62,19 @@
   <h2>Patient Allocation Calculator</h2>
 
   <div class="input-section">
-    <!-- Left: Inputs -->
     <div class="inputs">
       <label>Total Staff: <input type="number" id="totalStaff"></label>
-      <label>ICU Patients: <input type="number" id="icuPatients"></label>
-      <label>CT Patients: <input type="number" id="ctPatients"></label>
-      <label>CD Patients: <input type="number" id="cdPatients"></label>
-      <label>CCU Patients: <input type="number" id="ccuPatients"></label>
+      <label>ICU Patients: <input type="number" id="icuPatients" oninput="updateTotalPatients()"></label>
+      <label>CT Patients: <input type="number" id="ctPatients" oninput="updateTotalPatients()"></label>
+      <label>CD Patients: <input type="number" id="cdPatients" oninput="updateTotalPatients()"></label>
+      <label>CCU Patients: <input type="number" id="ccuPatients" oninput="updateTotalPatients()"></label>
       <div>
         <button onclick="allocatePatients()">Calculate</button>
         <button onclick="resetForm()">Reset</button>
       </div>
+      <div id="totalPatientsDisplay">Total Patients: 0</div>
     </div>
 
-    <!-- Right: FINAL aligned -->
     <div class="final-box">
       <div id="final">FINAL: —</div>
     </div>
@@ -90,30 +88,44 @@
   </div>
 
   <script>
-    function allocatePatients() {
-      const totalStaff = parseInt(document.getElementById("totalStaff").value);
-      let icuPatients = parseInt(document.getElementById("icuPatients").value);
-      let ctPatients = parseInt(document.getElementById("ctPatients").value);
-      let cdPatients = parseInt(document.getElementById("cdPatients").value);
-      let ccuPatients = parseInt(document.getElementById("ccuPatients").value);
+    function getValue(id) {
+      const val = parseInt(document.getElementById(id).value);
+      return isNaN(val) ? 0 : val;
+    }
 
-      if (isNaN(totalStaff) || totalStaff <= 0) {
+    function updateTotalPatients() {
+      const icu = getValue("icuPatients");
+      const ct = getValue("ctPatients");
+      const cd = getValue("cdPatients");
+      const ccu = getValue("ccuPatients");
+      const total = icu + ct + cd + ccu;
+      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: " + total;
+    }
+
+    function allocatePatients() {
+      const totalStaff = getValue("totalStaff");
+      let icuPatients = getValue("icuPatients");
+      let ctPatients = getValue("ctPatients");
+      let cdPatients = getValue("cdPatients");
+      let ccuPatients = getValue("ccuPatients");
+
+      if (totalStaff <= 0) {
         alert("Please enter valid staff count");
         return;
       }
 
       const totalPatients = icuPatients + ctPatients + cdPatients + ccuPatients;
+      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: " + totalPatients;
+
       const modResult = totalPatients % totalStaff;
       const higherWorkload = Math.ceil(totalPatients / totalStaff);
       const lowerWorkload = Math.floor(totalPatients / totalStaff);
 
-      // Build FINAL line
       let finalArray = [];
       for (let i = 0; i < totalStaff - modResult; i++) finalArray.push(lowerWorkload);
       for (let i = 0; i < modResult; i++) finalArray.push(higherWorkload);
       document.getElementById("final").innerText = "FINAL: " + finalArray.join(", ");
 
-      // Remaining patients
       let remainingCCU = ccuPatients;
       let remainingCD = cdPatients;
       let remainingCT = ctPatients;
@@ -188,6 +200,7 @@
       document.getElementById("cdPatients").value = "";
       document.getElementById("ccuPatients").value = "";
       document.getElementById("final").innerText = "FINAL: —";
+      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: 0";
       document.querySelector("#resultTable thead").innerHTML = "";
       document.querySelector("#resultTable tbody").innerHTML = "";
     }
