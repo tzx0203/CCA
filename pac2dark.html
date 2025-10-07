@@ -155,20 +155,21 @@
   table {
     border-collapse: collapse;
     width: 100%;
-    min-width: 720px;
+    min-width: 600px; /* Reduced from 720px */
   }
 
   th, td {
     border: 1px solid var(--table-border);
-    padding: 10px;
+    padding: 6px 8px; /* Reduced padding */
     text-align: center;
     transition: all 0.3s ease;
+    font-size: 14px; /* Slightly smaller font */
   }
 
   th {
     background: var(--table-header-bg);
     font-weight: 700;
-    min-width: 80px;
+    min-width: 60px; /* Reduced from 80px */
     color: var(--table-header-text);
   }
 
@@ -184,9 +185,10 @@
 
   .lock-cell {
     cursor: pointer;
-    padding: 8px;
+    padding: 6px; /* Reduced padding */
     background: var(--lock-bg);
     color: var(--lock-text);
+    font-size: 13px; /* Smaller font for lock text */
   }
 
   .locked {
@@ -194,11 +196,11 @@
     color: var(--lock-text);
   }
 
-  /* input inside cells */
+  /* input inside cells - made more compact */
   .cell-input {
-    width: 72px;
-    padding: 6px;
-    font-size: 14px;
+    width: 50px; /* Reduced from 72px */
+    padding: 4px; /* Reduced padding */
+    font-size: 13px; /* Smaller font */
     text-align: center;
     border: none;
     background: transparent;
@@ -232,7 +234,7 @@
 
   /* show a subtle inner border to look like a cell on small screens */
   @media (max-width:640px) {
-    .cell-input { width:86px; }
+    .cell-input { width: 60px; } /* Adjusted for mobile */
     .theme-switcher {
       position: relative;
       top: 0;
@@ -243,7 +245,7 @@
     .final-box { order:2; margin-top:6px; }
     .inputs { width:100%; align-items:center; }
     input[type=number] { width:140px; }
-    table { min-width:560px; }
+    table { min-width:500px; } /* Further reduced for mobile */
   }
 </style>
 </head>
@@ -256,11 +258,11 @@
 
   <div class="input-section">
     <div class="inputs">
-      <label>Total Staff: <input id="totalStaff" type="number" min="1" value="8"></label>
-      <label>ICU Patients: <input id="icuPatients" type="number" min="0" value="8" oninput="updateTotalPatients()"></label>
-      <label>CT Patients: <input id="ctPatients" type="number" min="0" value="15" oninput="updateTotalPatients()"></label>
-      <label>CD Patients: <input id="cdPatients" type="number" min="0" value="8" oninput="updateTotalPatients()"></label>
-      <label>CCU Patients: <input id="ccuPatients" type="number" min="0" value="9" oninput="updateTotalPatients()"></label>
+      <label>Total Staff: <input id="totalStaff" type="number" min="1" value=""></label>
+      <label>ICU Patients: <input id="icuPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+      <label>CT Patients: <input id="ctPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+      <label>CD Patients: <input id="cdPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+      <label>CCU Patients: <input id="ccuPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
 
       <div class="controls">
         <button id="calcBtn" onclick="initialCalculate()">Calculate</button>
@@ -301,19 +303,19 @@ function toggleTheme() {
   localStorage.setItem('theme', newTheme);
 }
 
-// Initialize theme from localStorage or system preference
+// Initialize theme - default to light mode
 function initTheme() {
   const savedTheme = localStorage.getItem('theme');
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  } else if (systemPrefersDark) {
+  // Default to light mode, only use dark if explicitly saved
+  if (savedTheme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
   }
   
   // Update button text
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const currentTheme = document.documentElement.getAttribute('data-theme');
   const themeButton = document.querySelector('.theme-toggle');
   themeButton.textContent = currentTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
 }
