@@ -1,209 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Patient Allocation Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    
-    .input-section {
-      display: flex;
-      align-items: stretch;
-      gap: 30px;
-      flex-wrap: wrap;
-    }
-    .inputs {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 200px;
-    }
-    .inputs label { margin-bottom: 10px; font-size: 16px; }
-    input { padding: 8px; width: 100px; margin-left: 5px; font-size: 16px; }
-    button { margin: 10px 5px 0 0; padding: 10px 15px; font-size: 16px; }
-    
-    .final-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      min-width: 200px;
-      margin-top: 10px;
-    }
-    #final { font-weight: bold; font-size: 22px; text-align: center; }
-    #totalPatientsDisplay { margin-top: 10px; font-weight: bold; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Patient Allocation — Cell Spinners + CCU-first</title>
+<style>
+  :root {
+    /* Light theme (default) */
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --input-bg: #ffffff;
+    --input-border: #cccccc;
+    --input-text: #333333;
+    --button-bg: #f0f0f0;
+    --button-text: #333333;
+    --button-hover: #e0e0e0;
+    --table-header-bg: #f5f5f5;
+    --table-header-text: #333333;
+    --table-row-bg: #fafafa;
+    --table-border: #d0d0d0;
+    --lock-bg: #e0e0e0;
+    --lock-text: #333333;
+    --row-totals-bg: #f0f8ff;
+    --final-box-bg: transparent;
+    --final-text: #333333;
+  }
 
-    table { border-collapse: collapse; margin-top: 25px; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 14px; }
-    th { background: #f0f0f0; }
+  [data-theme="dark"] {
+    /* Dark theme */
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --input-bg: #2d2d2d;
+    --input-border: #555555;
+    --input-text: #e0e0e0;
+    --button-bg: #404040;
+    --button-text: #e0e0e0;
+    --button-hover: #505050;
+    --table-header-bg: #2d2d2d;
+    --table-header-text: #e0e0e0;
+    --table-row-bg: #252525;
+    --table-border: #404040;
+    --lock-bg: #404040;
+    --lock-text: #e0e0e0;
+    --row-totals-bg: #1e3a5f;
+    --final-box-bg: transparent;
+    --final-text: #e0e0e0;
+  }
 
-    .table-container {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 16px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 
-    @media (max-width: 600px) {
-      .input-section {
-        flex-direction: column;
-        align-items: center;
-      }
-      .inputs, .final-box {
-        width: 100%;
-        text-align: center;
-      }
-      input { width: 120px; }
-      #final { font-size: 20px; margin-top: 10px; }
+  h2 { margin-bottom: 8px; }
+
+  .theme-switcher {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+
+  .theme-toggle {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--input-border);
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .theme-toggle:hover {
+    background: var(--button-hover);
+  }
+
+  .input-section {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-top: 40px;
+  }
+
+  .inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+  }
+
+  label {
+    font-size: 15px;
+    color: var(--text-color);
+  }
+
+  input[type=number] {
+    padding: 8px;
+    width: 120px;
+    font-size: 15px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
+    border-radius: 4px;
+  }
+
+  .controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    padding: 10px 14px;
+    font-size: 15px;
+    cursor: pointer;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background: var(--button-hover);
+  }
+
+  .final-box {
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--final-box-bg);
+  }
+
+  #finalPrev, #finalAfter {
+    font-weight: 700;
+    font-size: 16px;
+    text-align: center;
+    white-space: nowrap;
+    color: var(--final-text);
+  }
+
+  .table-container {
+    margin-top: 18px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 600px; /* Reduced from 720px */
+  }
+
+  th, td {
+    border: 1px solid var(--table-border);
+    padding: 6px 8px; /* Reduced padding */
+    text-align: center;
+    transition: all 0.3s ease;
+    font-size: 14px; /* Slightly smaller font */
+  }
+
+  th {
+    background: var(--table-header-bg);
+    font-weight: 700;
+    min-width: 60px; /* Reduced from 80px */
+    color: var(--table-header-text);
+  }
+
+  tbody th {
+    text-align: left;
+    background: var(--table-row-bg);
+  }
+
+  .lock-row th {
+    background: var(--bg-color);
+    border-bottom: 0;
+  }
+
+  .lock-cell {
+    cursor: pointer;
+    padding: 6px; /* Reduced padding */
+    background: var(--lock-bg);
+    color: var(--lock-text);
+    font-size: 13px; /* Smaller font for lock text */
+  }
+
+  .locked {
+    background: var(--lock-bg) !important;
+    color: var(--lock-text);
+  }
+
+  /* input inside cells - made more compact */
+  .cell-input {
+    width: 50px; /* Reduced from 72px */
+    padding: 4px; /* Reduced padding */
+    font-size: 13px; /* Smaller font */
+    text-align: center;
+    border: none;
+    background: transparent;
+    outline: none;
+    color: var(--input-text);
+  }
+
+  td input.cell-input::-webkit-outer-spin-button,
+  td input.cell-input::-webkit-inner-spin-button {
+    -webkit-appearance: inner-spin-button;
+  }
+
+  /* Highlight for non-zero cells */
+  .highlighted-cell {
+    font-weight: bold;
+  }
+
+  /* Row totals style */
+  .row-totals td {
+    background: var(--row-totals-bg) !important;
+    font-weight: bold;
+  }
+
+  /* Bold for total patients display */
+  #totalPatientsDisplay {
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 8px;
+    color: var(--text-color);
+  }
+
+  /* show a subtle inner border to look like a cell on small screens */
+  @media (max-width:640px) {
+    .cell-input { width: 60px; } /* Adjusted for mobile */
+    .theme-switcher {
+      position: relative;
+      top: 0;
+      right: 0;
+      margin-bottom: 16px;
     }
-  </style>
+    .input-section { flex-direction:column; align-items:center; }
+    .final-box { order:2; margin-top:6px; }
+    .inputs { width:100%; align-items:center; }
+    input[type=number] { width:140px; }
+    table { min-width:500px; } /* Further reduced for mobile */
+  }
+</style>
 </head>
 <body>
+  <div class="theme-switcher">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+  </div>
 
   <h2>Patient Allocation Calculator</h2>
 
   <div class="input-section">
     <div class="inputs">
-      <label>Total Staff: <input type="number" id="totalStaff"></label>
-      <label>ICU Patients: <input type="number" id="icuPatients" oninput="updateTotalPatients()"></label>
-      <label>CT Patients: <input type="number" id="ctPatients" oninput="updateTotalPatients()"></label>
-      <label>CD Patients: <input type="number" id="cdPatients" oninput="updateTotalPatients()"></label>
-      <label>CCU Patients: <input type="number" id="ccuPatients" oninput="updateTotalPatients()"></label>
-      <div>
-        <button onclick="allocatePatients()">Calculate</button>
-        <button onclick="resetForm()">Reset</button>
+      <label>Total Staff: <input id="totalStaff" type="number" min="1" value=""></label>
+      <label>ICU Patients: <input id="icuPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+      <label>CT Patients: <input id="ctPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+      <label>CD Patients: <input id="cdPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+      <label>CCU Patients: <input id="ccuPatients" type="number" min="0" value="" oninput="updateTotalPatients()"></label>
+
+      <div class="controls">
+        <button id="calcBtn" onclick="initialCalculate()">Calculate</button>
+        <button id="recalcBtn" onclick="recalculateUnlocked()" style="display:none">Recalculate (Unlocked Only)</button>
+        <button onclick="resetAll()">Reset</button>
       </div>
+
       <div id="totalPatientsDisplay">Total Patients: 0</div>
     </div>
 
     <div class="final-box">
-      <div id="final">FINAL: —</div>
+      <div>
+        <div id="finalPrev">FINAL: —</div>
+        <div id="finalAfter" style="margin-top:6px; color:#444"></div>
+      </div>
     </div>
   </div>
 
   <div class="table-container">
-    <table id="resultTable">
-      <thead></thead>
-      <tbody></tbody>
+    <table id="allocTable" aria-label="Allocation table">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
     </table>
   </div>
 
-  <script>
-    function getValue(id) {
-      const val = parseInt(document.getElementById(id).value);
-      return isNaN(val) ? 0 : val;
-    }
+<script>
+/* ---------- theme management ---------- */
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  
+  // Update button text
+  const themeButton = document.querySelector('.theme-toggle');
+  themeButton.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+  
+  // Save preference
+  localStorage.setItem('theme', newTheme);
+}
 
-    function updateTotalPatients() {
-      const icu = getValue("icuPatients");
-      const ct = getValue("ctPatients");
-      const cd = getValue("cdPatients");
-      const ccu = getValue("ccuPatients");
-      const total = icu + ct + cd + ccu;
-      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: " + total;
-    }
+// Initialize theme - default to light mode
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  
+  // Default to light mode, only use dark if explicitly saved
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+  
+  // Update button text
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const themeButton = document.querySelector('.theme-toggle');
+  themeButton.textContent = currentTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
 
-    function allocatePatients() {
-      const totalStaff = getValue("totalStaff");
-      let icuPatients = getValue("icuPatients");
-      let ctPatients = getValue("ctPatients");
-      let cdPatients = getValue("cdPatients");
-      let ccuPatients = getValue("ccuPatients");
+// Call initTheme when page loads
+document.addEventListener('DOMContentLoaded', initTheme);
 
-      if (totalStaff <= 0) {
-        alert("Please enter valid staff count");
-        return;
+/* ---------- utilities ---------- */
+function toInt(v){ const n = parseInt(v); return isNaN(n)?0:n; }
+function inputVal(id){ return toInt(document.getElementById(id).value); }
+function setText(id, text){ document.getElementById(id).innerText = text; }
+
+/* ---------- state ---------- */
+let colors = [
+  "#ffeb3b","#81d4fa","#b9f6ca","#ffab91",
+  "#ce93d8","#f48fb1","#a5d6a7","#ffcc80",
+  "#b39ddb","#80cbc4"
+];
+let currentData = null; // { CCU:[], CD:[], CT:[], ICU:[], Total:[] } — note CCU-first order
+let locked = [];        // boolean per staff index (0-based)
+let staffCount = 0;
+
+/* ---------- live input total ---------- */
+function updateTotalPatients(){
+  const total = inputVal("icuPatients") + inputVal("ctPatients") + inputVal("cdPatients") + inputVal("ccuPatients");
+  setText("totalPatientsDisplay","Total Patients: " + total);
+}
+updateTotalPatients();
+
+/* ---------- initial calculation (CCU > CD > CT > ICU priority) ---------- */
+function initialCalculate(){
+  staffCount = Math.max(1, inputVal("totalStaff"));
+  const icu = inputVal("icuPatients");
+  const ct  = inputVal("ctPatients");
+  const cd  = inputVal("cdPatients");
+  const ccu = inputVal("ccuPatients");
+
+  const totalPatients = icu + ct + cd + ccu;
+  if (staffCount <= 0) { alert("Please enter valid total staff."); return; }
+  if (totalPatients === 0) { alert("Total patients is zero — nothing to allocate."); }
+
+  // CCU-first approach: allocate CCU, then CD, then CT, then ICU
+  const modResult = totalPatients % staffCount;
+  const higher = Math.ceil(totalPatients / staffCount);
+  const lower  = Math.floor(totalPatients / staffCount);
+
+  // remaining by dept (CCU first)
+  let rem = { CCU: ccu, CD: cd, CT: ct, ICU: icu };
+
+  // build arrays
+  const CCU = [], CD = [], CT = [], ICU = [], Total = [];
+  for (let i=1;i<=staffCount;i++){
+    const workload = (i <= modResult) ? higher : lower;
+    // allocate CCU first, then CD, then CT, then ICU
+    const ccuAlloc = Math.min(rem.CCU, workload);
+    rem.CCU -= ccuAlloc;
+
+    const cdAlloc = Math.min(rem.CD, workload - ccuAlloc);
+    rem.CD -= cdAlloc;
+
+    const ctAlloc = Math.min(rem.CT, workload - ccuAlloc - cdAlloc);
+    rem.CT -= ctAlloc;
+
+    const icuAlloc = Math.min(rem.ICU, workload - ccuAlloc - cdAlloc - ctAlloc);
+    rem.ICU -= icuAlloc;
+
+    CCU.push(ccuAlloc); CD.push(cdAlloc); CT.push(ctAlloc); ICU.push(icuAlloc);
+    Total.push(ccuAlloc+cdAlloc+ctAlloc+icuAlloc);
+  }
+
+  currentData = {CCU,CD,CT,ICU,Total};
+  locked = new Array(staffCount).fill(false);
+  renderTable();
+  renderFinalOriginal(currentData);
+  document.getElementById("recalcBtn").style.display = "none";
+}
+
+/* ---------- render table with input number cells ---------- */
+function renderTable(){
+  const thead = document.getElementById("thead");
+  const tbody = document.getElementById("tbody");
+  thead.innerHTML = ""; tbody.innerHTML = "";
+
+  // lock row
+  let lockRow = "<tr class='lock-row'><th></th>";
+  for (let i=0;i<staffCount;i++){
+    const cls = locked[i] ? "locked" : "";
+    lockRow += `<th class="lock-cell ${cls}" data-index="${i}" onclick="toggleLock(event,this,${i})">Lock</th>`;
+  }
+  // Add empty cell for row totals column
+  lockRow += "<th></th></tr>";
+
+  // header
+  let header = "<tr><th>Department</th>";
+  for (let i=0;i<staffCount;i++){
+    header += `<th class="staffHeader" style="background:${colors[i % colors.length]}">Staff ${i+1}</th>`;
+  }
+  // Add row totals header
+  header += "<th>Row Total</th></tr>";
+
+  thead.innerHTML = lockRow + header;
+
+  // departments in CCU-first order visually we will display as ICU, CT, CD, CCU? 
+  // User previously wanted vertical order ICU,CT,CD,CCU; but initial allocation priority is CCU-first.
+  // We'll display rows in the order: ICU, CT, CD, CCU (as before), BUT the allocation algorithm used CCU priority.
+  // If you want displayed order changed, let me know.
+  const displayOrder = ["ICU","CT","CD","CCU"]; // visual order
+  // create rows
+  displayOrder.forEach((dept)=>{
+    let row = `<tr><th>${dept}</th>`;
+    let rowTotal = 0;
+    
+    for (let i=0;i<staffCount;i++){
+      // find value from currentData using dept mapping
+      let val = 0;
+      if (currentData) {
+        if (dept === "ICU") val = currentData.ICU[i] || 0;
+        if (dept === "CT")  val = currentData.CT[i]  || 0;
+        if (dept === "CD")  val = currentData.CD[i]  || 0;
+        if (dept === "CCU") val = currentData.CCU[i] || 0;
       }
-
-      const totalPatients = icuPatients + ctPatients + cdPatients + ccuPatients;
-      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: " + totalPatients;
-
-      const modResult = totalPatients % totalStaff;
-      const higherWorkload = Math.ceil(totalPatients / totalStaff);
-      const lowerWorkload = Math.floor(totalPatients / totalStaff);
-
-      let finalArray = [];
-      for (let i = 0; i < totalStaff - modResult; i++) finalArray.push(lowerWorkload);
-      for (let i = 0; i < modResult; i++) finalArray.push(higherWorkload);
-      document.getElementById("final").innerText = "FINAL: " + finalArray.join(", ");
-
-      let remainingCCU = ccuPatients;
-      let remainingCD = cdPatients;
-      let remainingCT = ctPatients;
-      let remainingICU = icuPatients;
-
-      const colors = [
-        "#ffeb3b", "#81d4fa", "#b9f6ca", "#ffab91",
-        "#ce93d8", "#f48fb1", "#a5d6a7", "#ffcc80",
-        "#b39ddb", "#80cbc4"
-      ];
-
-      const data = { ICU: [], CT: [], CD: [], CCU: [], Total: [] };
-
-      for (let i = 1; i <= totalStaff; i++) {
-        const workload = (i <= modResult) ? higherWorkload : lowerWorkload;
-        let ccuAlloc, cdAlloc, ctAlloc, icuAlloc;
-
-        ccuAlloc = Math.min(remainingCCU, workload);
-        remainingCCU -= ccuAlloc;
-
-        cdAlloc = Math.min(remainingCD, workload - ccuAlloc);
-        remainingCD -= cdAlloc;
-
-        ctAlloc = Math.min(remainingCT, workload - ccuAlloc - cdAlloc);
-        remainingCT -= ctAlloc;
-
-        icuAlloc = Math.min(remainingICU, workload - ccuAlloc - cdAlloc - ctAlloc);
-        remainingICU -= icuAlloc;
-
-        const total = ccuAlloc + cdAlloc + ctAlloc + icuAlloc;
-
-        data.ICU.push(icuAlloc);
-        data.CT.push(ctAlloc);
-        data.CD.push(cdAlloc);
-        data.CCU.push(ccuAlloc);
-        data.Total.push(total);
-      }
-
-      const tableHead = document.querySelector("#resultTable thead");
-      const tableBody = document.querySelector("#resultTable tbody");
-      tableHead.innerHTML = "";
-      tableBody.innerHTML = "";
-
-      let header = "<tr><th>Department</th>";
-      for (let i = 1; i <= totalStaff; i++) {
-        header += `<th style="background:${colors[(i - 1) % colors.length]}">Staff ${i}</th>`;
-      }
-      header += "</tr>";
-      tableHead.innerHTML = header;
-
-      const departments = ["ICU", "CT", "CD", "CCU", "Total"];
-      departments.forEach((dept) => {
-        let row = `<tr><th>${dept}</th>`;
-        for (let i = 0; i < totalStaff; i++) {
-          const value = data[dept][i];
-          const color = colors[i % colors.length];
-          if (value > 0 && dept !== "Total") {
-            row += `<td style="background:${color};font-weight:bold;">${value}</td>`;
-          } else {
-            row += `<td>${value ?? ""}</td>`;
-          }
-        }
-        row += "</tr>";
-        tableBody.innerHTML += row;
-      });
+      rowTotal += val;
+      
+      // Add highlight class for non-zero values
+      const highlightClass = val > 0 ? "highlighted-cell" : "";
+      const cellStyle = val > 0 ? `style="background:${colors[i % colors.length]}"` : "";
+      
+      row += `<td ${cellStyle}><input type="number" min="0" step="1" class="cell-input ${highlightClass}" data-dept="${dept}" data-staff="${i}" value="${val}"></td>`;
     }
+    
+    // Add row total cell
+    row += `<td class="row-total-cell" data-dept="${dept}">${rowTotal}</td>`;
+    row += "</tr>";
+    tbody.innerHTML += row;
+  });
 
-    function resetForm() {
-      document.getElementById("totalStaff").value = "";
-      document.getElementById("icuPatients").value = "";
-      document.getElementById("ctPatients").value = "";
-      document.getElementById("cdPatients").value = "";
-      document.getElementById("ccuPatients").value = "";
-      document.getElementById("final").innerText = "FINAL: —";
-      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: 0";
-      document.querySelector("#resultTable thead").innerHTML = "";
-      document.querySelector("#resultTable tbody").innerHTML = "";
+  // Add row totals row
+  let rowTotalsRow = `<tr class="row-totals"><th>Row Total</th>`;
+  // Calculate initial row totals
+  const rowTotals = calculateRowTotals();
+  for (let i=0;i<staffCount;i++){
+    rowTotalsRow += `<td>${rowTotals.staff[i] || 0}</td>`;
+  }
+  rowTotalsRow += `<td>${rowTotals.grandTotal || 0}</td></tr>`;
+  tbody.innerHTML += rowTotalsRow;
+
+  // attach listeners to inputs for live update
+  document.querySelectorAll('.cell-input').forEach(inp=>{
+    inp.addEventListener('input', onCellInput);
+    inp.addEventListener('blur', ()=> {
+      // normalize: empty -> 0 (display empty but value retrieval treats as 0)
+      if (inp.value === "") inp.value = inp.value; // keep empty visually; totals treat as 0
+      updateTotalsFromTable();
+    });
+  });
+
+  updateLockVisuals();
+  updateTotalsFromTable();
+}
+
+/* ---------- calculate row totals ---------- */
+function calculateRowTotals() {
+  const staffTotals = new Array(staffCount).fill(0);
+  const deptTotals = {ICU: 0, CT: 0, CD: 0, CCU: 0};
+  let grandTotal = 0;
+
+  if (currentData) {
+    // Calculate department totals (row totals)
+    deptTotals.ICU = currentData.ICU.reduce((sum, val) => sum + val, 0);
+    deptTotals.CT = currentData.CT.reduce((sum, val) => sum + val, 0);
+    deptTotals.CD = currentData.CD.reduce((sum, val) => sum + val, 0);
+    deptTotals.CCU = currentData.CCU.reduce((sum, val) => sum + val, 0);
+    
+    // Calculate staff totals (column totals)
+    for (let i = 0; i < staffCount; i++) {
+      staffTotals[i] = (currentData.ICU[i] || 0) + (currentData.CT[i] || 0) + 
+                       (currentData.CD[i] || 0) + (currentData.CCU[i] || 0);
     }
-  </script>
+    
+    // Calculate grand total
+    grandTotal = deptTotals.ICU + deptTotals.CT + deptTotals.CD + deptTotals.CCU;
+  }
+
+  return {
+    dept: deptTotals,
+    staff: staffTotals,
+    grandTotal: grandTotal
+  };
+}
+
+/* ---------- update row totals display ---------- */
+function updateRowTotalsDisplay() {
+  const rowTotals = calculateRowTotals();
+  
+  // Update department row totals
+  document.querySelectorAll('.row-total-cell').forEach(cell => {
+    const dept = cell.getAttribute('data-dept');
+    cell.innerText = rowTotals.dept[dept] || 0;
+  });
+  
+  // Update row totals row (staff totals and grand total)
+  const rowTotalsRow = document.querySelector('.row-totals');
+  if (rowTotalsRow) {
+    let cells = rowTotalsRow.querySelectorAll('td');
+    for (let i = 0; i < staffCount; i++) {
+      if (cells[i]) {
+        cells[i].innerText = rowTotals.staff[i] || 0;
+      }
+    }
+    // Update grand total in the last cell
+    if (cells[staffCount]) {
+      cells[staffCount].innerText = rowTotals.grandTotal || 0;
+    }
+  }
+}
+
+/* ---------- cell input handler ---------- */
+function onCellInput(e){
+  const el = e.target;
+  // allow only digits and optional leading minus (we'll restrict to >=0)
+  let v = el.value.replace(/[^\d-]/g,'');
+  // remove minus if any (we want non-negative)
+  v = v.replace(/-/g,'');
+  el.value = v;
+  
+  // Update cell highlighting in real-time
+  updateCellHighlighting(el);
+  updateTotalsFromTable();
+}
+
+/* ---------- update cell highlighting based on value ---------- */
+function updateCellHighlighting(inputElement) {
+  const value = toInt(inputElement.value);
+  const staffIndex = parseInt(inputElement.getAttribute('data-staff'));
+  const td = inputElement.parentElement;
+  
+  if (value > 0) {
+    td.style.background = colors[staffIndex % colors.length];
+    inputElement.classList.add('highlighted-cell');
+  } else {
+    td.style.background = '';
+    inputElement.classList.remove('highlighted-cell');
+  }
+}
+
+/* ---------- update totals from table inputs ---------- */
+function updateTotalsFromTable(){
+  for (let s=0;s<staffCount;s++){
+    let sum = 0;
+    ["ICU","CT","CD","CCU"].forEach(dept=>{
+      const cellInput = document.querySelector(`.cell-input[data-staff="${s}"][data-dept="${dept}"]`);
+      const v = cellInput ? toInt(cellInput.value) : 0;
+      sum += v;
+      // also reflect into currentData per dept if present
+      if (currentData && currentData[dept]) currentData[dept][s] = v;
+    });
+    if (currentData && currentData.Total) currentData.Total[s] = sum;
+  }
+  
+  // Update row totals display
+  updateRowTotalsDisplay();
+}
+
+/* ---------- toggle lock ---------- */
+function toggleLock(evt, el, index){
+  locked[index] = !locked[index];
+  const anyLocked = locked.some(v=>v);
+  document.getElementById("recalcBtn").style.display = anyLocked ? "inline-block" : "none";
+  updateLockVisuals();
+}
+
+/* ---------- update lock visuals (shade inputs in locked columns) ---------- */
+function updateLockVisuals(){
+  document.querySelectorAll('.lock-cell').forEach(th => {
+    const idx = parseInt(th.getAttribute('data-index'));
+    if (locked[idx]) { th.classList.add('locked'); th.innerText = "🔒"; }
+    else { th.classList.remove('locked'); th.innerText = "Lock"; }
+  });
+  // shade header cells
+  const headerThs = document.querySelectorAll('.staffHeader');
+  headerThs.forEach((h, idx) => h.style.opacity = locked[idx] ? "0.7" : "1.0");
+  
+  // Update highlighting for all cells based on lock status
+  document.querySelectorAll('.cell-input').forEach(inp => {
+    const s = parseInt(inp.getAttribute('data-staff'));
+    const value = toInt(inp.value);
+    const td = inp.parentElement;
+    
+    if (locked[s]) {
+      // For locked columns, use a darker version of the color or keep original with opacity
+      if (value > 0) {
+        td.style.background = colors[s % colors.length] + "CC"; // Add transparency
+      } else {
+        td.style.background = "#efefef";
+      }
+      inp.style.background = "transparent";
+    } else {
+      // For unlocked columns, use full color for non-zero values
+      if (value > 0) {
+        td.style.background = colors[s % colors.length];
+      } else {
+        td.style.background = "";
+      }
+      inp.style.background = "transparent";
+    }
+  });
+}
+
+/* ---------- render original FINAL ---------- */
+function renderFinalOriginal(data){
+  if(!data) return;
+  setText("finalPrev", "FINAL: " + data.Total.map(n=>n||0).join(", "));
+  setText("finalAfter", "");
+}
+
+/* ---------- recalculate unlocked only (CCU-first) ---------- */
+function recalculateUnlocked(){
+  if (!currentData) return;
+  const deptInput = {
+    CCU: inputVal("ccuPatients"),
+    CD:  inputVal("cdPatients"),
+    CT:  inputVal("ctPatients"),
+    ICU: inputVal("icuPatients")
+  };
+  
+  // sum locked contributions by dept from table inputs
+  const lockedContrib = {CCU:0, CD:0, CT:0, ICU:0};
+  let lockedCount = 0;
+  for (let s=0;s<staffCount;s++){
+    if (!locked[s]) continue;
+    lockedCount++;
+    ["CCU","CD","CT","ICU"].forEach(dept=>{
+      const inp = document.querySelector(`.cell-input[data-staff="${s}"][data-dept="${dept}"]`);
+      const val = inp ? toInt(inp.value) : 0;
+      lockedContrib[dept] += val;
+    });
+  }
+
+  // validation
+  for (const d of ["CCU","CD","CT","ICU"]){
+    if (lockedContrib[d] > deptInput[d]) {
+      alert(`Locked staff claim ${lockedContrib[d]} in ${d}, which exceeds input ${deptInput[d]}. Adjust locked values first.`);
+      return;
+    }
+  }
+
+  // remaining to distribute among unlocked
+  const rem = {
+    CCU: deptInput.CCU - lockedContrib.CCU,
+    CD:  deptInput.CD  - lockedContrib.CD,
+    CT:  deptInput.CT  - lockedContrib.CT,
+    ICU: deptInput.ICU - lockedContrib.ICU
+  };
+  const totalRem = rem.CCU + rem.CD + rem.CT + rem.ICU;
+  const unlockedCount = staffCount - lockedCount;
+  if (unlockedCount <= 0) { alert("All staff are locked — nothing to recalculate."); return; }
+
+  const modResult = totalRem % unlockedCount;
+  const higher = Math.ceil(totalRem / unlockedCount);
+  const lower = Math.floor(totalRem / unlockedCount);
+
+  // start from currentData but overwrite unlocked columns
+  const newCCU = currentData.CCU.slice();
+  const newCD  = currentData.CD.slice();
+  const newCT  = currentData.CT.slice();
+  const newICU = currentData.ICU.slice();
+  const newTotal = currentData.Total.slice();
+
+  // Create a list of unlocked staff indices
+  const unlockedStaff = [];
+  for (let s=0;s<staffCount;s++){
+    if (!locked[s]) unlockedStaff.push(s);
+  }
+
+  // Reset all unlocked staff to zero before redistribution
+  unlockedStaff.forEach(s => {
+    newCCU[s] = 0;
+    newCD[s] = 0;
+    newCT[s] = 0;
+    newICU[s] = 0;
+    newTotal[s] = 0;
+  });
+
+  // Make a copy of remaining patients for distribution
+  const remCopy = {...rem};
+  
+  // Distribute to unlocked staff using CCU-first priority
+  for (let i=0;i<unlockedStaff.length;i++){
+    const s = unlockedStaff[i];
+    const workload = (i < modResult) ? higher : lower;
+    
+    // Apply CCU-first allocation (same logic as initial calculation)
+    const ccuAlloc = Math.min(remCopy.CCU, workload);
+    remCopy.CCU -= ccuAlloc;
+
+    const cdAlloc = Math.min(remCopy.CD, workload - ccuAlloc);
+    remCopy.CD -= cdAlloc;
+
+    const ctAlloc = Math.min(remCopy.CT, workload - ccuAlloc - cdAlloc);
+    remCopy.CT -= ctAlloc;
+
+    const icuAlloc = Math.min(remCopy.ICU, workload - ccuAlloc - cdAlloc - ctAlloc);
+    remCopy.ICU -= icuAlloc;
+
+    newCCU[s] = ccuAlloc;
+    newCD[s]  = cdAlloc;
+    newCT[s]  = ctAlloc;
+    newICU[s] = icuAlloc;
+    newTotal[s] = ccuAlloc + cdAlloc + ctAlloc + icuAlloc;
+  }
+
+  // commit new currentData
+  currentData = {CCU:newCCU, CD:newCD, CT:newCT, ICU:newICU, Total:newTotal};
+
+  // write back to table inputs for unlocked columns
+  ["ICU","CT","CD","CCU"].forEach((dept) => {
+    for (let s=0;s<staffCount;s++){
+      const inp = document.querySelector(`.cell-input[data-staff="${s}"][data-dept="${dept}"]`);
+      if (!inp) continue;
+      if (!locked[s]) {
+        inp.value = currentData[dept][s] !== undefined ? currentData[dept][s] : 0;
+        // Update highlighting for the cell
+        updateCellHighlighting(inp);
+      }
+      // locked columns keep their existing input values
+    }
+  });
+
+  // update totals and show final After-Lock
+  updateTotalsFromTable();
+  setText("finalAfter", "FINAL (After Lock): " + currentData.Total.map(n=>n||0).join(", "));
+}
+
+/* ---------- reset ---------- */
+function resetAll(){
+  document.getElementById("totalStaff").value = "";
+  document.getElementById("icuPatients").value = "";
+  document.getElementById("ctPatients").value = "";
+  document.getElementById("cdPatients").value = "";
+  document.getElementById("ccuPatients").value = "";
+  setText("finalPrev","FINAL: —");
+  setText("finalAfter","");
+  setText("totalPatientsDisplay","Total Patients: 0");
+  document.getElementById("thead").innerHTML = "";
+  document.getElementById("tbody").innerHTML = "";
+  currentData = null; locked = []; staffCount = 0;
+  document.getElementById("recalcBtn").style.display = "none";
+}
+</script>
 </body>
 </html>
