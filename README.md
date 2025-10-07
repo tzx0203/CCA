@@ -1,43 +1,75 @@
-Patient Allocation Calculator
+🏥 Patient Allocation Calculator 
 
-A simple web-based calculator for distributing patients evenly across staff members in different hospital departments.
-Built with HTML, CSS, and JavaScript — no installation required. Runs on any device (desktop, tablet, or mobile).
+A **web-based workload distribution tool** for healthcare staff scheduling — built entirely with **pure HTML, CSS, and JavaScript** (no frameworks or backend required).
 
-https://tzx0203.github.io/CCA/
+This calculator helps allocate patients to staff fairly and efficiently across multiple units (CCU, CD, CT, ICU) using a **CCU-first allocation logic**, allowing for **manual locking**, **live recalculation**, and a built-in **light/dark mode** switch.
 
-Features
+Open here => https://tzx0203.github.io/CCA/
 
-Dynamic Patient Distribution
-Automatically allocates patients across staff members based on the total number of patients and available staff.
+---
 
-Supports Multiple Departments
-Input patient numbers for:
+## ✨ Features
 
-ICU
-CT
-CD
-CCU
+- 🧮 **Automatic Patient Distribution**  
+  Distributes patient workload among available staff proportionally, with priority given to CCU → CD → CT → ICU.
 
-Final Workload Summary
-Displays the final distribution per staff in a compact row (e.g., FINAL: 4, 4, 5, 5, ...).
+- 🔒 **Lock/Unlock Columns**  
+  Freeze specific staff assignments and recalculate others dynamically.
 
-Color-Coded Staff Columns
-Each staff column is highlighted with a unique color, making it easy to see workloads.
+- 🔁 **Live Recalculation**  
+  Update allocations instantly when changing patient numbers.
 
-Reset & Recalculate
+- 🎨 **Light / Dark Mode Toggle**  
+  A built-in 🌙 / ☀️ switch for comfortable viewing — all handled locally with CSS variables.
 
-How to Use
+- 📊 **Row and Column Totals**  
+  Displays live totals per department and per staff, plus a grand total.
 
-1.Enter the total number of staff.
-2.Fill in patient counts for each department (ICU, CT, CD, CCU).
-3.Click Calculate.
-4.Patients are evenly distributed across staff.
-5.Staff workloads are shown per department and as totals.
-6.The FINAL line shows overall distribution.
-7.Click Reset to start over.
+- 💻 **Fully Offline & Lightweight**  
+  No dependencies, APIs, or database — runs directly in your browser.
 
-Compatibility
+---
 
-Works on desktop browsers (Chrome, Edge, Firefox, Safari).
-Optimized for mobile devices (Android/iOS).
-No installation required — just open the link.
+## 🧰 How It Works
+
+1. Enter:
+   - Total number of staff  
+   - Number of patients in **ICU**, **CT**, **CD**, and **CCU**
+
+2. Click **Calculate**  
+   → The system allocates patients per staff column using a *CCU-first* approach.
+
+3. Optionally:
+   - **Lock** specific staff columns to preserve their allocation.  
+   - Adjust patient counts and press **Recalculate (Unlocked Only)** to redistribute remaining workload.
+
+4. Use **Reset** to clear all inputs and start again.
+
+---
+
+## 🌗 Theme Toggle
+
+- Click **🌙 Dark Mode** (top-right) to switch to dark mode.  
+- Click again (**☀️ Light Mode**) to return.  
+- Smooth transitions and color adjustments are automatic.
+
+---
+
+## 🏗️ Technologies Used
+
+- **HTML5** — structure  
+- **CSS3** — responsive design + color theming (CSS variables)  
+- **JavaScript (ES6)** — core allocation logic and dynamic updates
+
+
+---
+
+## 👨‍⚕️ Author
+
+Developed by **[Your Name or Team Name]**  
+📧 *tanzx02@gmail.com*  
+🌐 [GitHub Profile](https://github.com/tzx0203/)
+
+---
+
+> 💡 Tip: Works perfectly offline — no installation needed. Simply open the `.html` file anywhere, anytime.
