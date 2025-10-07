@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Allocation Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    
+    .input-section {
+      display: flex;
+      align-items: stretch;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .inputs {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 200px;
+    }
+    .inputs label { margin-bottom: 10px; font-size: 16px; }
+    input { padding: 8px; width: 100px; margin-left: 5px; font-size: 16px; }
+    button { margin: 10px 5px 0 0; padding: 10px 15px; font-size: 16px; }
+    
+    .final-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      min-width: 200px;
+      margin-top: 10px;
+    }
+    #final { font-weight: bold; font-size: 22px; text-align: center; }
+    #totalPatientsDisplay { margin-top: 10px; font-weight: bold; }
+
+    table { border-collapse: collapse; margin-top: 25px; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 14px; }
+    th { background: #f0f0f0; }
+
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 600px) {
+      .input-section {
+        flex-direction: column;
+        align-items: center;
+      }
+      .inputs, .final-box {
+        width: 100%;
+        text-align: center;
+      }
+      input { width: 120px; }
+      #final { font-size: 20px; margin-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Patient Allocation Calculator</h2>
+
+  <div class="input-section">
+    <div class="inputs">
+      <label>Total Staff: <input type="number" id="totalStaff"></label>
+      <label>ICU Patients: <input type="number" id="icuPatients" oninput="updateTotalPatients()"></label>
+      <label>CT Patients: <input type="number" id="ctPatients" oninput="updateTotalPatients()"></label>
+      <label>CD Patients: <input type="number" id="cdPatients" oninput="updateTotalPatients()"></label>
+      <label>CCU Patients: <input type="number" id="ccuPatients" oninput="updateTotalPatients()"></label>
+      <div>
+        <button onclick="allocatePatients()">Calculate</button>
+        <button onclick="resetForm()">Reset</button>
+      </div>
+      <div id="totalPatientsDisplay">Total Patients: 0</div>
+    </div>
+
+    <div class="final-box">
+      <div id="final">FINAL: —</div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="resultTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    function getValue(id) {
+      const val = parseInt(document.getElementById(id).value);
+      return isNaN(val) ? 0 : val;
+    }
+
+    function updateTotalPatients() {
+      const icu = getValue("icuPatients");
+      const ct = getValue("ctPatients");
+      const cd = getValue("cdPatients");
+      const ccu = getValue("ccuPatients");
+      const total = icu + ct + cd + ccu;
+      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: " + total;
+    }
+
+    function allocatePatients() {
+      const totalStaff = getValue("totalStaff");
+      let icuPatients = getValue("icuPatients");
+      let ctPatients = getValue("ctPatients");
+      let cdPatients = getValue("cdPatients");
+      let ccuPatients = getValue("ccuPatients");
+
+      if (totalStaff <= 0) {
+        alert("Please enter valid staff count");
+        return;
+      }
+
+      const totalPatients = icuPatients + ctPatients + cdPatients + ccuPatients;
+      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: " + totalPatients;
+
+      const modResult = totalPatients % totalStaff;
+      const higherWorkload = Math.ceil(totalPatients / totalStaff);
+      const lowerWorkload = Math.floor(totalPatients / totalStaff);
+
+      let finalArray = [];
+      for (let i = 0; i < totalStaff - modResult; i++) finalArray.push(lowerWorkload);
+      for (let i = 0; i < modResult; i++) finalArray.push(higherWorkload);
+      document.getElementById("final").innerText = "FINAL: " + finalArray.join(", ");
+
+      let remainingCCU = ccuPatients;
+      let remainingCD = cdPatients;
+      let remainingCT = ctPatients;
+      let remainingICU = icuPatients;
+
+      const colors = [
+        "#ffeb3b", "#81d4fa", "#b9f6ca", "#ffab91",
+        "#ce93d8", "#f48fb1", "#a5d6a7", "#ffcc80",
+        "#b39ddb", "#80cbc4"
+      ];
+
+      const data = { ICU: [], CT: [], CD: [], CCU: [], Total: [] };
+
+      for (let i = 1; i <= totalStaff; i++) {
+        const workload = (i <= modResult) ? higherWorkload : lowerWorkload;
+        let ccuAlloc, cdAlloc, ctAlloc, icuAlloc;
+
+        ccuAlloc = Math.min(remainingCCU, workload);
+        remainingCCU -= ccuAlloc;
+
+        cdAlloc = Math.min(remainingCD, workload - ccuAlloc);
+        remainingCD -= cdAlloc;
+
+        ctAlloc = Math.min(remainingCT, workload - ccuAlloc - cdAlloc);
+        remainingCT -= ctAlloc;
+
+        icuAlloc = Math.min(remainingICU, workload - ccuAlloc - cdAlloc - ctAlloc);
+        remainingICU -= icuAlloc;
+
+        const total = ccuAlloc + cdAlloc + ctAlloc + icuAlloc;
+
+        data.ICU.push(icuAlloc);
+        data.CT.push(ctAlloc);
+        data.CD.push(cdAlloc);
+        data.CCU.push(ccuAlloc);
+        data.Total.push(total);
+      }
+
+      const tableHead = document.querySelector("#resultTable thead");
+      const tableBody = document.querySelector("#resultTable tbody");
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+
+      let header = "<tr><th>Department</th>";
+      for (let i = 1; i <= totalStaff; i++) {
+        header += `<th style="background:${colors[(i - 1) % colors.length]}">Staff ${i}</th>`;
+      }
+      header += "</tr>";
+      tableHead.innerHTML = header;
+
+      const departments = ["ICU", "CT", "CD", "CCU", "Total"];
+      departments.forEach((dept) => {
+        let row = `<tr><th>${dept}</th>`;
+        for (let i = 0; i < totalStaff; i++) {
+          const value = data[dept][i];
+          const color = colors[i % colors.length];
+          if (value > 0 && dept !== "Total") {
+            row += `<td style="background:${color};font-weight:bold;">${value}</td>`;
+          } else {
+            row += `<td>${value ?? ""}</td>`;
+          }
+        }
+        row += "</tr>";
+        tableBody.innerHTML += row;
+      });
+    }
+
+    function resetForm() {
+      document.getElementById("totalStaff").value = "";
+      document.getElementById("icuPatients").value = "";
+      document.getElementById("ctPatients").value = "";
+      document.getElementById("cdPatients").value = "";
+      document.getElementById("ccuPatients").value = "";
+      document.getElementById("final").innerText = "FINAL: —";
+      document.getElementById("totalPatientsDisplay").innerText = "Total Patients: 0";
+      document.querySelector("#resultTable thead").innerHTML = "";
+      document.querySelector("#resultTable tbody").innerHTML = "";
+    }
+  </script>
+</body>
+</html>
