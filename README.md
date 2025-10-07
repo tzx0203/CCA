@@ -4,7 +4,7 @@ A **web-based workload distribution tool** for healthcare staff scheduling — b
 
 This calculator helps allocate patients to staff fairly and efficiently across multiple units (CCU, CD, CT, ICU) using a **CCU-first allocation logic**, allowing for **manual locking**, **live recalculation**, and a built-in **light/dark mode** switch.
 
-Open here => https://tzx0203.github.io/CCA/
+[Open Calculator here](https://tzx0203.github.io/CCA/)
 
 ---
 
@@ -64,9 +64,8 @@ Open here => https://tzx0203.github.io/CCA/
 
 ---
 
-## 👨‍⚕️ Author
-
-Developed by **[Your Name or Team Name]**  
+## 👨‍⚕️ Developed by AI (chatGPT & Deepseek)
+ 
 📧 *tanzx02@gmail.com*  
 🌐 [GitHub Profile](https://github.com/tzx0203/)
 
